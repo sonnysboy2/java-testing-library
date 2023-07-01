@@ -1,6 +1,6 @@
 # this is some dumb testing library i spent 5 minutes on and then decided to actually expand lol
 
-Example code:
+## Example.java:
 ```java
 public class Example {
   public static void main(String[] args) {
@@ -56,4 +56,25 @@ public class Example {
     }
   }
 }
+```
+## Example output:
+```
+[Example:7] Testing assertNot:
+
+    Should pass the tests [Example.java:8] ✓
+[Example:11] Testing assertTrue:
+
+    Should also pass the tests [Example.java:12] ✓
+[Example:15] testing assertEquals:
+
+    int equality [Example.java:16] ✓
+
+
+      String equality [Example.java:25] ✓
+
+      Complex objects (that define their own equals) [Example.java:31] ✓
+    Object equality [Example.java:24] ✓
+[Example:37] Array equality:
+
+    Should determine array equality [Example.java:38] ✓
 ```
