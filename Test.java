@@ -1,5 +1,7 @@
+package com.paul.testing;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.function.*;
 public class Test {
 
 
@@ -37,13 +39,6 @@ public class Test {
       e.printStackTrace();
     }
   }
-
-
-
-    @FunctionalInterface
-    public static interface ItFunction {
-      void run() throws Exception;
-    }
 
 
 
@@ -215,7 +210,19 @@ public class Test {
   public static void assertEquals(final Object o, final Object p) {
     if (!isEqual(o, p)) fail("Expected " + o + " but was " + p);
   } 
-
+  /**
+  Allows one to compare objects however the hell they want to i dont care do what you want
+  <p> Fails if <code> comparison(o, p) </code> returns false. </p>
+  @param o the first object
+  @param p the second object
+  @param comparison the comparison function to use.
+  */
+  public static <T> void assertEqualsWith(final T o, final T p, final BiFunction<T, T, Boolean> comparison, final String message) {
+    if (!(comparison.apply(o, p))) fail(message);
+  } 
+  public static <T> void assertEqualsWith(final T o, final T p,final BiFunction<T, T, Boolean> comparison) {
+    if (!(comparison.apply(o, p))) fail("");
+  } 
 
   /**
   //   wouldn't it be nice if this was as easy as i wish it would be
@@ -441,13 +448,31 @@ f.get(p))).isPresent()) {  // if only...
   public static void assertNotEquals(final Object o, final Object p) {
     if (isEqual(o, p)) fail("Arguments did not differ");
   } 
+  /**
+  Allows one to compare objects however the hell they want to i dont care do what you want
+  <p> Fails if <code> comparison(o, p) </code> returns true. </p>
+  @param o the first object
+  @param p the second object
+  @param comparison the comparison function to use.
+  @param message failure message.
+  */
+  public static <T> void assertNotEqualsWith(final T o, final T p, BiFunction<T, T, Boolean> comparison, String message) {
+    if (comparison.apply(o, p)) fail(message);
+  } 
+  
+  /**
+  <p> Equivalent to {@link Test.assertNotEqualsWith}(o, p, comparison, "") </p>
+  */
+  public static <T> void assertNotEqualsWith(final T o, final T p, BiFunction<T, T, Boolean> comparison) {
+    assertNotEqualsWith(o, p, comparison, "");
+  }
   private static void fail(String message) {
     throw new AssertionError(message);
   }
-
-
-
-
-
+  
+    @FunctionalInterface
+    public static interface ItFunction {
+      void run() throws Exception;
+    }
 
 }
