@@ -1,3 +1,4 @@
+
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -623,8 +624,9 @@ public class Test {
     // methods that begin with "test" inside classes with the TestTarget annotation will be called.
     
 
-    if (args.length > 0 && args[0] == "-h") {
-      throw new RuntimeException("Usage: <idk what im gonna call it or how im gonna have it execute> [folder path]\n-- If [folder path] is left blank, \"./\" will be used.");
+    if (args.length > 0 && "-h".equals(args[0])) {
+      System.out.println("Usage: <idk what im gonna call it or how im gonna have it execute> [folder path]\n-- If [folder path] is left blank, \"./\" will be used.");
+      System.exit(0);
     }
 
 
@@ -634,9 +636,14 @@ public class Test {
     File folder = new File(arg);
 
     if (!(folder.exists()))
-      throw new RuntimeException(folder.getPath() + " doesn't exist");
-    if (!(folder.isDirectory()))
-      throw new RuntimeException(folder.getPath() + " is not a folder");
+    {
+      System.out.println(folder.getPath() + " doesn't exist");
+      System.exit(1);
+    }
+    if (!(folder.isDirectory())) {
+      System.out.println(folder.getPath() + " is not a folder");
+      System.exit(1);
+    }
 
     final long[] endingValues = new long[2]; // endingValues[0] = whether or not we even found a class. if it's 0 we didn't, 1 we did. 1 is the start time
     try (
@@ -650,13 +657,13 @@ public class Test {
       endingValues[1] = System.currentTimeMillis(); // don't take finding the files into consideration
       stream.forEach(file -> {
         
-        System.out.println(file);
 
         String classPath = file.toString()
           .replace(".class", "")
           .replaceAll("/", ".").substring(2);
         try {
           Class<?> clazz = Class.forName(classPath);
+          
 
           if (!clazz.isAnnotationPresent(TestTarget.class)) return;
 
@@ -667,8 +674,8 @@ public class Test {
             if (!(m.getName().startsWith("test"))) continue; // should start with test
             if (m.getParameterCount() != 0) continue; // shouldn't have parameters.
             if (m.getReturnType() != void.class) continue; // shouldn't return anything
+            m.setAccessible(true); // your mom
             
-            System.out.println("Found public static testing method " + m.getName() + " in " + clazz.getName());
             endingValues[0] = 1;
             m.invoke(null, (Object[]) null /* believe me cuh it's a vararg!*/); // run the test
           }
@@ -683,8 +690,6 @@ public class Test {
       System.exit(0);
     }
     System.out.printf("%d/%d tests passed (%dms)\n", passed, testsRan, (System.currentTimeMillis() - endingValues[1]));
-    
     System.exit(0);
-
   }
 }
