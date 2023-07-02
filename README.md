@@ -2,9 +2,11 @@
 
 ## Example.java:
 ```java
+@TestTarget
 public class Example {
-  public static void main(String[] args) {
 
+// well what else do you want me to call it
+  public static void testTester() {
     Test.describe("Testing assertNot");
     Test.it("Should pass the tests", () -> {
       for (int i = 0; i < 1000; i++ ) Test.assertNot(i < 0);
@@ -41,9 +43,21 @@ public class Example {
       int[] a1 = {1,2,3,4,5};
       int[] a2 = {1,2,3,4,5};
       Test.assertEquals(a1, a2);
+      
+    });
+
+    Test.describe("assertEqualsWith");
+    Test.it("should work", () -> {
+
+      int[] a1 = {1,2,3,4,5};
+      int[] a2 = {1,2,3,4,69};
+      Test.assertEqualsWith(a1, a2, (a, b) -> {
+        return a[0] == b[0];
+      }, "<clever message>");
 
     });
   }
+    
   private static class DummyObject {
     private int yourMomsPhoneNumber;
     public DummyObject(int yep) {
@@ -59,22 +73,28 @@ public class Example {
 ```
 ## Example output:
 ```
-[Example:7] Testing assertNot:
 
-    Should pass the tests [Example.java:8] ✓
-[Example:11] Testing assertTrue:
+[Example:13] Testing assertNot:
 
-    Should also pass the tests [Example.java:12] ✓
-[Example:15] testing assertEquals:
+    Should pass the tests [Example.java:14] ✓
+[Example:17] Testing assertTrue:
 
-    int equality [Example.java:16] ✓
+    Should also pass the tests [Example.java:18] ✓
+[Example:21] testing assertEquals:
+
+    int equality [Example.java:22] ✓
 
 
-      String equality [Example.java:25] ✓
+      String equality [Example.java:31] ✓
 
-      Complex objects (that define their own equals) [Example.java:31] ✓
-    Object equality [Example.java:24] ✓
-[Example:37] Array equality:
+      Complex objects (that define their own equals) [Example.java:37] ✓
+    Object equality [Example.java:30] ✓
+[Example:43] Array equality:
 
-    Should determine array equality [Example.java:38] ✓
+    Should determine array equality [Example.java:44] ✓
+[Example:52] assertEqualsWith:
+
+    should work [Example.java:53] ✓
+i am a testing method
+8/8 tests passed (323ms)
 ```
