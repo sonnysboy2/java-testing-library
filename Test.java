@@ -1,3 +1,4 @@
+package com.paul.testing;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -7,53 +8,12 @@ import java.util.stream.*;
 import java.io.*;
 
 public class Test {
-
   private static int depth = 1;
 
   private static int passed = 0;
 
   private static int testsRan = 0;
-  
 
-  public static void describe(final String msg) {
-
-    StackTraceElement[] ah = new Exception().getStackTrace();
-    String callingClass = ah[1].getClassName();
-    int lineNum = ah[1].getLineNumber();
-    System.out.println(String.format("[%s:%d] %s:", callingClass, lineNum, msg));
-  }
-
-  public static void it(final String should, final ItFunction itf) {
-    StackTraceElement[] ah = new Exception().getStackTrace();
-    String callingClass = ah[1].getClassName() + ".java";
-    int lineNum = ah[1].getLineNumber();
-    testsRan++;
-    try {
-
-      System.out.println();
-
-      ++depth;
-
-      itf.run();
-      System.out.print("  ".repeat(depth) + should + String.format(" [%s:%d] ", callingClass, lineNum));
-      System.out.println("\u2713"); // part 1 of hack
-      depth--;
-
-      passed++;
-      
-    } catch (final AssertionError e) {
-
-      System.out.println("\u274C"); // part 2 of hack
-
-      System.out.println("  ".repeat(depth) + should + " FAILED AT " + callingClass + ":" + lineNum + ":\n"
-          + "  ".repeat(depth + 1) + e.getMessage());
-      depth--;
-
-      passed--;
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
-  }
 
   /**
    * <p>
@@ -411,7 +371,9 @@ public class Test {
   }
 
   /**
-   * Array equality check.
+   * <p>
+   * Fails if <code> o </code> equals <code> p</code>
+   * </p>
    */
   public static void assertNotEquals(final double[] a, final double[] b) {
     if (a == null && b == null)
@@ -619,24 +581,63 @@ public class Test {
     void run() throws Exception;
   }
 
+  public static void describe(final String msg) {
+
+    StackTraceElement[] ah = new Exception().getStackTrace();
+    String callingClass = ah[1].getClassName();
+    int lineNum = ah[1].getLineNumber();
+    System.out.println(String.format("[%s:%d] %s:", callingClass, lineNum, msg));
+  }
+
+  // ==== HACK BECAUSE IM LAZY====
+  private static String cShould = ""; // todo remove hack
+  // ===========
+
+  public static void it(final String should, final ItFunction itf) {
+    cShould = should;
+    testsRan++;
+    try {
+
+      ++depth;
+
+      itf.run();
+      System.out.println(" ".repeat(depth) + should);
+      depth--;
+
+      passed++;
+
+    } catch (final AssertionError e) {
+      // obsolete until hack is gone
+      // System.out.println("\u274C" + " ".repeat(depth) + should + " FAILED:\n"
+      //     + " ".repeat(depth + 1) + e.getMessage());
+      // depth--;
+
+      // passed--;
+    } catch (final Exception e) {
+      System.out.println("caught exception");
+      e.printStackTrace();
+    }
+  }
+
+
   public static void main(String[] args) throws IOException {
 
-    // methods that begin with "test" inside classes with the TestTarget annotation will be called.
-    
+    // methods that begin with "test" inside classes with the TestTarget annotation
+    // will be called.
 
     if (args.length > 0 && "-h".equals(args[0])) {
-      System.out.println("Usage: <idk what im gonna call it or how im gonna have it execute> [folder path]\n-- If [folder path] is left blank, \"./\" will be used.");
+      System.out.println(
+          "Usage: <idk what im gonna call it or how im gonna have it execute> [folder path]\n-- If [folder path] is left blank, \"./\" will be used.");
       System.exit(0);
     }
 
-
     String arg = "./";
-    if (args.length > 0) arg = args[0]; // yep
-    
+    if (args.length > 0)
+      arg = args[0]; // yep
+
     File folder = new File(arg);
 
-    if (!(folder.exists()))
-    {
+    if (!(folder.exists())) {
       System.out.println(folder.getPath() + " doesn't exist");
       System.exit(1);
     }
@@ -645,46 +646,61 @@ public class Test {
       System.exit(1);
     }
 
-    final long[] endingValues = new long[2]; // endingValues[0] = whether or not we even found a class. if it's 0 we didn't, 1 we did. 1 is the start time
+    final long[] endingValues = new long[2]; // endingValues[0] = whether or not we even found a class. if it's 0 we
+                                             // didn't, 1 we did. 1 is the start time
     try (
-      Stream<Path> stream = Files.walk(Paths.get(arg))
-      .filter(Files::isRegularFile)
-        
-      .filter(x -> x.toString().endsWith(".class")
-            //only take classes
-              && !x.toString().contains("$") // filter out subclasses and stuff
-              )) {
+        Stream<Path> stream = Files.walk(Paths.get(arg))
+            .filter(Files::isRegularFile)
+
+            .filter(x -> x.toString().endsWith(".class")
+                // only take classes
+                && !x.toString().contains("$") // filter out subclasses and stuff
+            )) {
       endingValues[1] = System.currentTimeMillis(); // don't take finding the files into consideration
       stream.forEach(file -> {
-        
 
         String classPath = file.toString()
-          .replace(".class", "")
-          .replaceAll("/", ".").substring(2);
+            .replace(".class", "")
+            .replaceAll("/", ".").substring(2);
         try {
           Class<?> clazz = Class.forName(classPath);
-          
 
-          if (!clazz.isAnnotationPresent(TestTarget.class)) return;
+          if (!clazz.isAnnotationPresent(TestTarget.class))
+            return;
 
-
-          for (Method m: clazz.getDeclaredMethods()) {
+          for (Method m : clazz.getDeclaredMethods()) {
             // this part is just making sure we're likely hitting a testing method lol
-            if ((m.getModifiers() & 9) == 0) continue; // 9 == (static | public)
-            if (!(m.getName().startsWith("test"))) continue; // should start with test
-            if (m.getParameterCount() != 0) continue; // shouldn't have parameters.
-            if (m.getReturnType() != void.class) continue; // shouldn't return anything
+            if ((m.getModifiers() & 9) == 0)
+              continue; // 9 == (static | public)
+            if (!(m.getName().startsWith("test")))
+              continue; // should start with test
+            if (m.getParameterCount() != 0)
+              continue; // shouldn't have parameters.
+            if (m.getReturnType() != void.class)
+              continue; // shouldn't return anything
             m.setAccessible(true); // your mom
-            
+
             endingValues[0] = 1;
-            m.invoke(null, (Object[]) null /* believe me cuh it's a vararg!*/); // run the test
+            m.invoke(null, (Object[]) null /* believe me cuh it's a vararg! */); // run the test
           }
         } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
-          e.printStackTrace();
+          if (e.getCause() instanceof AssertionError) { // forgot about might needing this
+            // not needing this is very easy to do so like do it when you feell ike it or
+            // whatever i dont care i'm you.
+
+            System.out.println("\u274C" + " ".repeat(depth) + cShould + " FAILED:\n"
+                + " ".repeat(depth + 1) + e.getCause().getMessage());
+            depth--;
+
+            passed--;
+
+          } else {
+            e.printStackTrace();
+          }
         }
       });
     }
-    if (0 == testsRan) { 
+    if (0 == testsRan) {
       // then we never actually tested anything
       System.out.println("Found no tests :/");
       System.exit(0);
