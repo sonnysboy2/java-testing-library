@@ -1,6 +1,8 @@
+@TestTarget
 public class Example {
-  public static void main(String[] args) {
 
+// well what else do you want me to call it
+  public static void testTester() {
     Test.describe("Testing assertNot");
     Test.it("Should pass the tests", () -> {
       for (int i = 0; i < 1000; i++ ) Test.assertNot(i < 0);
@@ -39,7 +41,19 @@ public class Example {
       Test.assertEquals(a1, a2);
       
     });
+
+    Test.describe("assertEqualsWith");
+    Test.it("should work", () -> {
+
+      int[] a1 = {1,2,3,4,5};
+      int[] a2 = {1,2,3,4,69};
+      Test.assertEqualsWith(a1, a2, (a, b) -> {
+        return a[0] == b[0];
+      }, "<clever message>");
+
+    });
   }
+    
   private static class DummyObject {
     private int yourMomsPhoneNumber;
     public DummyObject(int yep) {
@@ -51,4 +65,5 @@ public class Example {
       return o.yourMomsPhoneNumber == this.yourMomsPhoneNumber;
     }
   }
+  
 }
