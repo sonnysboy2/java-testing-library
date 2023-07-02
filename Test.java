@@ -1,5 +1,3 @@
-package com.paul.testing;
-
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.BiFunction;
